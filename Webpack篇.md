@@ -15,8 +15,16 @@ webpack是现代JavaScript应用程序的静态模块打包器。webpack处理�
 
 ```js
 build/webpack.base.conf.js
+// 单个入口（简写）语法
 module.exports = {
   entry: './src/main.js'
+};
+// 对象语法
+const config = {
+  entry: {
+    app: './src/app.js',
+    vendors: './src/vendors.js'
+  }
 };
 ```
 
@@ -52,12 +60,66 @@ loader让webpack能够处理非JavaScript文件（webpack自身只能理解JS）
 
 ```js
 build/webpack.base.conf.js
-module.exports = {
+// loader的三种写法
+module: {
+  rules: [
+    {
+      test: /\.css$/,
+      use: ['style-loader','css-loader']
+    }
+  ]
+},
+module: {
+  rules: [
+    {
+      test: /\.css$/,
+      loader: ['style-loader','css-loader']
+    }
+  ]
+},
+module: {
+  rules: [
+    {
+      test: /\.css$/,
+      use: [
+        {loader:'style-loader'},
+        {loader:'css-loader'}
+      ]
+    }
+  ]
+},
+```
+
+1. test属性：用于标识出应该被对应的loader进行转换的某个或某些文件；正则匹配到的
+2. use属性：表示进行转换时，应该使用哪个loader。
+
+# 插件{plugins}
+
+loader被用于转换某些类型的模块，而插件则可以执行范围更广的任务。插件的范围包括，从打包优化和压缩，一直到重新定义环境中否变量。插件接口极其强大，可以处理各种各样的任务。
+
+如果想使用一个插件，你只需要`require()`它，然后添加到`plugins`数组中。多说插件可以通过选项（options）自定义。也可在一个配置文件中因为不同目的而多次使用一个插件，这时需要通过使用`new`操作符来创建一个实例。
+
+``````
+build/webpack.base.conf.js
+const HtmlWebpackPlugin = require('html-webpack-plugin'); // 通过 npm 安装
+const webpack = require('webpack'); // 用于访问内置插件
+
+const config = {
   module: {
     rules: [
-      { test: /\.css$/, use: 'css-loader' },
-      { test: /\.ts$/, use: 'ts-loader' }
+      { test: /\.txt$/, use: 'raw-loader' }
     ]
-  }
+  },
+  plugins: [
+    new HtmlWebpackPlugin({template: './src/index.html'}),
+    new webpack.optimize.CommonsChunkPlugin('common.js'),
+    new webpack.ProvidePlugin({
+      jQuery: "jquery",
+      $: "jquery"
+    })
+  ]
 };
-```
+
+module.exports = config;
+``````
+
